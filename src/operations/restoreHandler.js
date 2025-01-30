@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const pool = require('../../config/databaseConfig');
+const { pool } = require('../../config/databaseConfig');
 const { createRestoreDirectoryIfNoneExist } = require('../utils/fileSystem')
 
 // OPERATION: RESTORE

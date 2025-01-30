@@ -1,4 +1,4 @@
-const pool = require('../../config/databaseConfig');
+const { pool } = require('../../config/databaseConfig');
 
 // OPERATION: PRUNE
 const pruneSnapshot = async (snapshotId) => {

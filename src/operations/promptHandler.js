@@ -3,7 +3,7 @@ const readline = require('readline');
 const { takeSnapshot, listSnapshots } = require('./snapshotHandler');
 const { restoreSnapshot } = require('./restoreHandler');
 const { pruneSnapshot, pruneSnapshotByTimestamp } = require('./pruneHandler');
-const { closeDatabaseConnection } = require('../../config/databaseConfig');
+const { closeDatabaseConnection } = require('../database/databaseConnection');
 
 // provides a CLI interface, used to get user input
 const readLine = readline.createInterface({

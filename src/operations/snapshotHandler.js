@@ -1,4 +1,4 @@
-const pool = require('../../config/databaseConfig');
+const { pool } = require('../../config/databaseConfig');
 const { hashFile, getFilesInDirectory, getFileStats, readFileContent } = require('../utils/fileSystem')
 
 // OPERATION: SNAPSHOT
