@@ -6,52 +6,39 @@ const { pool } = require('../../config/databaseConfig');
 const takeIncrementalSnapshot = async (directoryPath) => {
 
     try {
-        // query database for most recent snapshot
-        const latestSnapshotQuery = `SELECT id, timestamp FROM snapshots ORDER BY timestamp DESC LIMIT 1`;
-        const latestSnapshotResult = await pool.query(latestSnapshotQuery);
 
-        let previousSnapshotId;
-        // check if snapshot exists in database
-        if (latestSnapshotResult.rows.length) {
-            previousSnapshotId = latestSnapshotResult.rows[0].id;
-        }
+        console.log("Preparing file snapshot...");
+        // fetch all files from the database
+        const allFilesQuery = `SELECT filename, content_hash FROM files`;
+        const allFilesResult = await pool.query(allFilesQuery);
+        console.log(`Files found in the database: ${allFilesResult.rows.length}`);
+        const recordedFiles = new Map(allFilesResult.rows.map((file) => {
+            return [file.filename, file.content_hash]
+        }));
 
-        // fetch files from the specified directory
-        const currentFiles = getFilesInDirectory(directoryPath);
-
-        // fetch the files from the previous snapshot if one exists
-        let previousFiles = [];
-
-        if (previousSnapshotId) {
-            const previousFilesQuery = `SELECT filename, content_hash FROM files WHERE snapshot_id = $1`;
-            const previousFilesResult = await pool.query(previousFilesQuery, [previousSnapshotId]);
-            // these files will serve as a comparison to the files in the current state of the specified directory
-            previousFiles = previousFilesResult.rows;
-        }
+        // fetch current files from the specified directory
+        const currentFiles = await getFilesInDirectory(directoryPath);
+        console.log(`Files found in specified directory: ${currentFiles.length}`);
 
         // files will need to be compared from previous state and current state to make informed incremental changes
         const newFiles = [];
         const modifiedFiles = [];
 
-        // loop through files in current state of specified directory
-        for (const currentFilePath of currentFiles) {
-            // calculate file hash
-            const currentFileHash = await hashFile(currentFilePath);
+        // compare current directory files against all files recorded in database
+        for (const filePath of currentFiles) {
             // takes a file path as an argument and returns the last item of the path to retrieve filename
-            const currentFileName = path.basename(currentFilePath);
+            const fileName = path.basename(filePath);
+            // calculate file hash
+            const fileHash = await hashFile(filePath);
 
-            // check if the current filename matches any previous filenames
-            const previousFile = previousFiles.find((file) => {
-                return file.filename === currentFileName
-            });
-
-            // if previousFile returns false, the current file is handled as a new file to the current directory
-            if (!previousFile) {
-                newFiles.push({ filePath: currentFilePath, fileHash: currentFileHash });
-            // of previousFile returns true, check the content hash to confirm if there were any changes made to the file
-            } else if (previousFile.content_hash !== currentFileHash) {
-                // if the content hash has changed, the file has been modified
-                modifiedFiles.push({ filePath: currentFilePath, fileHash: currentFileHash });
+            // if the database does not contain a file with the same fileName, file is considered new
+            // has() check if key exists in the Map, fileName
+            if (!recordedFiles.has(fileName)) {
+                newFiles.push({ filePath, fileHash });
+            // if the database contains a file with the same fileName but with a different hash, file is considered to need updating
+            // get() grabs the value that corresponds with the key, fileHash
+            } else if (recordedFiles.get(fileName) !== fileHash) {
+                modifiedFiles.push({ filePath, fileHash });
             }
         }
 
@@ -60,6 +47,7 @@ const takeIncrementalSnapshot = async (directoryPath) => {
         const snapshotResult = await pool.query(snapshotQuery);
         // assign snapshotId variable to insert into files table to associate snapshots with files
         const snapshotId = snapshotResult.rows[0].id;
+        console.log(`Snapshot created with an ID of: ${snapshotId}`);
 
         // insert new and modified files into the database and remove the files that are considered to be deleted
         const filePromises = [];
@@ -75,6 +63,8 @@ const takeIncrementalSnapshot = async (directoryPath) => {
                     VALUES ($1, $2, $3, $4)
                 `;
                 filePromises.push(pool.query(fileQuery, [path.basename(newFile.filePath), newFile.fileHash, snapshotId, fileContent]));
+                // log when a new file is inserted into the database
+                console.log(`Inserted new file into database: ${path.basename(newFile.filePath)}`);
             } catch (error) {
                 console.error(`Error processing new file: ${newFile.filePath}`, error);
             }
@@ -94,6 +84,8 @@ const takeIncrementalSnapshot = async (directoryPath) => {
                     DO UPDATE SET content_hash = EXCLUDED.content_hash, content = EXCLUDED.content
                 `;
                 filePromises.push(pool.query(fileQuery, [path.basename(modifiedFile.filePath), modifiedFile.fileHash, snapshotId, modifiedFileContent]));
+                // Log when a file is updated
+                console.log(`Updated file in database: ${path.basename(modifiedFile.filePath)}`);
             } catch (error) {
                 console.error(`Error processing modified file: ${modifiedFile.filePath}`, error);
             }
@@ -102,7 +94,7 @@ const takeIncrementalSnapshot = async (directoryPath) => {
         // wait for all database changes to be applied
         await Promise.all(filePromises);
 
-        console.log(`Incremental snapshot successfully created with ID: ${snapshotId}`);
+        console.log(`Snapshot successfully created with ID: ${snapshotId}`);
     } catch (error) {
         console.error('Error creating incremental snapshot:', error.message);
         throw error;
