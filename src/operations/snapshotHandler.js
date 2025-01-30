@@ -1,5 +1,5 @@
-const { pool } = require('../../config/databaseConfig');
 const { hashFile, getFilesInDirectory, getFileStats, readFileContent } = require('../utils/fileSystem')
+const { pool } = require('../../config/databaseConfig');
 
 // OPERATION: SNAPSHOT
 const takeSnapshot = async (directoryPath) => {

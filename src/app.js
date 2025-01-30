@@ -1,3 +1,8 @@
+const path = require('path');
+// make sure environment variables are properly loaded in no matter where we run the program from in the file structure
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
+// console.log(process.env.DATABASE_PASSWORD);
+
 // main entry point for the CLI backup tool
 const { connectToDatabase } = require('./database/databaseConnection');
 const { promptUser } = require('./operations/promptHandler');

@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
-const { pool } = require('../../config/databaseConfig');
 const { createRestoreDirectoryIfNoneExist } = require('../utils/fileSystem')
+const { pool } = require('../../config/databaseConfig');
 
 // OPERATION: RESTORE
 const restoreSnapshot = async (snapshotId, outputDirectory) => {

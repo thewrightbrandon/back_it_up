@@ -1,5 +1,4 @@
-require('dotenv').config({path: '../.env'});
-// console.log("Environment variables: ", process.env);
+require('dotenv').config({ path: '../.env' });
 
 const { Pool } = require('pg');
 
@@ -10,7 +9,12 @@ const pool = new Pool({
     user: process.env.DATABASE_USER,
     password: process.env.DATABASE_PASSWORD,
     database: process.env.DATABASE_NAME,
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0,
+    idleTimeoutMillis: 60000,
+    connectionTimeoutMillis: 5000,
 });
 
-// console.log('Database Config:', pool.options);
-module.exports = { pool };
+// console.log('Database config ', pool);
+module.exports =  { pool };

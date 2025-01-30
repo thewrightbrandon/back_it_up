@@ -3,7 +3,6 @@ const readline = require('readline');
 const { takeSnapshot, listSnapshots } = require('./snapshotHandler');
 const { restoreSnapshot } = require('./restoreHandler');
 const { pruneSnapshot, pruneSnapshotByTimestamp } = require('./pruneHandler');
-const { closeDatabaseConnection } = require('../database/databaseConnection');
 
 // provides a CLI interface, used to get user input
 const readLine = readline.createInterface({
@@ -111,8 +110,6 @@ const promptUser = () => {
 
                 case 'exit':
                     console.log('Have a nice day!');
-                    // close database connection
-                    await closeDatabaseConnection();
                     // close readline interface
                     readLine.close();
                     // terminate any running processes
@@ -122,7 +119,6 @@ const promptUser = () => {
 
                 default:
                     console.log('Unknown command, please try again using one of the following commands:');
-                    promptUser();
                     break;
             }
         } catch (error) {
