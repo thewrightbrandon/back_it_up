@@ -21,17 +21,19 @@ const promptUser = () => {
     console.log(`
     |||| COMMAND LINE BACKUP TOOL ||||
     Available commands after arrow in quotes:
-    1. Generate Snapshot  -> "snapshot <directoryPath>"
-    2. List Snapshots     -> "list"
-    3. Restore Snapshot   -> "restore <snapshotId> <outputDirectory>"
-    4. Prune Snapshot     -> "prune <snapshotId>"
-    5. Prune by Timestamp -> "pruneByTimestamp <YYYY-MM-DD HH:MM:SS>"
-    6. Exit               -> "exit"
+    ★ Generate Snapshot  → "snapshot <directoryPath>"
+    ★ List Snapshots     → "list"
+    ★ Restore Snapshot   → "restore <snapshotId> <outputDirectory>"
+    ★ Prune Snapshot     → "prune <snapshotId>"
+    ★ Prune by Timestamp → "prune_by_timestamp <YYYY-MM-DD HH:MM:SS>"
+    ★ Exit               → "exit"
     `);
 
     readLine.question('Enter an available command: ', async (command) => {
         // converts user input command string into an array of arguments
         const commandArguments = command.split(' ');
+
+        // console.log("Command entered:", commandArguments);
 
         try {
             // handle different commands and case sensitivity
@@ -86,8 +88,10 @@ const promptUser = () => {
                     }
                     break;
 
-                case 'pruneByTimestamp':
-                    const timestamp = commandArguments[1];
+                case 'prune_by_timestamp':
+                    // rejoin timestamp format to follow YYYY-MM-DD HH:MM:SS
+                    const timestamp = [commandArguments[1], commandArguments[2]].join(' ');
+                    // regex to ensure timestamp format follows YYYY-MM-DD HH:MM:SS
                     const dateRegex = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/;
                     // will create a Date object if timestamp format is correct
                     const dateObject = new Date(timestamp);
@@ -105,7 +109,16 @@ const promptUser = () => {
                         break;
                     }
 
-                    await pruneSnapshotByTimestamp(timestamp);
+                    // format timestamp to match postgres format YYYY-MM-DD HH:MM:SS
+                    // toISOString() gives us something like 2025-01-29T23:15:33.000Z
+                    // the slice() method then trims off the milliseconds and timezone
+                    // ISO format uses a T in white space, so the replace() method is replaced by a space
+                    const formattedTimestamp = dateObject.toISOString().slice(0, 19).replace('T', ' ');
+
+                    // console.log("Formatted timestamp:", formattedTimestamp);
+
+                    // formattedTimestamp now matches the timestamp format in postgres db
+                    await pruneSnapshotByTimestamp(formattedTimestamp);
                     break;
 
                 case 'exit':

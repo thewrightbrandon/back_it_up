@@ -1,7 +1,6 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
-const dotenv = require('dotenv').config({path: '../../.env'});
 
 const createRestoreDirectoryIfNoneExist = (directoryPath) => {
     // create an output directory if one does not already exist
@@ -13,20 +12,34 @@ const createRestoreDirectoryIfNoneExist = (directoryPath) => {
 }
 
 const hashFile = (filePath) => {
+    return new Promise((resolve, reject) => {
+        try {
+            // console.log('Hash algo from environment variables:', process.env.HASH)
+            // hash algorithm pulled from environment variables
+            const hash = crypto.createHash(process.env.HASH);
+            const fileStream = fs.createReadStream(filePath);
 
-    try {
-        // hash algorithm pulled from environment variables
-        const hash = crypto.createHash(dotenv.parsed.HASH);
-        const file = fs.readFileSync(filePath);
-        // crypto update() method is used to add file content to the hash object
-        hash.update(file);
-        // crypto digest() method is used to finalize the hash value
-        return hash.digest('hex');
+            // hash in chunks
+            fileStream.on('data', (chunk) => {
+                hash.update(chunk);
+            });
 
-    } catch (error) {
-        console.error(`Error hashing file: ${filePath}`, error.message);
-        throw error;
-    }
+            fileStream.on('end', () => {
+                const fileHash = hash.digest('hex');
+                console.log(`File hash: ${fileHash}`);
+                resolve(fileHash);
+            });
+
+            fileStream.on('error', (error) => {
+                reject(error);
+            });
+
+        } catch (error) {
+            console.error(`Error hashing file: ${filePath}`, error.message);
+            reject(error);
+        }
+    })
+
 };
 
 // fetching all files from specified directory

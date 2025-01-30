@@ -1,5 +1,3 @@
-require('dotenv').config({ path: '../.env' });
-
 const { Pool } = require('pg');
 
 // create connection pool to allow reuse of database connection

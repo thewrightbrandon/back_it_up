@@ -5,7 +5,8 @@ const { pool } = require('../../config/databaseConfig');
 const takeSnapshot = async (directoryPath) => {
 
     try {
-        const snapshotQuery = `INSERT INTO snapshots (timestamp) VALUES (CURRENT_TIMESTAMP::timestamp(0)) RETURNING id`;
+        // round CURRENT_TIMESTAMP to the second to remove milliseconds
+        const snapshotQuery = `INSERT INTO snapshots (timestamp) VALUES (DATE_TRUNC('second', CURRENT_TIMESTAMP)) RETURNING id`;
         // executes single sql query, uses a connection from the pool and returns results
         const snapshotResult = await pool.query(snapshotQuery);
         // assign snapshotId variable to insert into files table to associate snapshots with files
@@ -22,7 +23,7 @@ const takeSnapshot = async (directoryPath) => {
                 const stat = getFileStats(file);
                 if (stat.isFile()) {
                     // calculate file hash
-                    const fileHash = hashFile(file);
+                    const fileHash = await hashFile(file);
                     // read file content as Buffer
                     const fileContent = readFileContent(file);
 
@@ -51,10 +52,13 @@ const takeSnapshot = async (directoryPath) => {
 
 // OPERATION: LIST
 const listSnapshots = async () => {
-
     try {
-        // will list snapshots by most recent
-        const query = `SELECT id, timestamp FROM snapshots ORDER BY timestamp DESC`;
+        // Use TO_CHAR to format the timestamp
+        const query = `
+            SELECT id, TO_CHAR(timestamp, 'YYYY-MM-DD HH:MM:SS') AS formatted_timestamp
+            FROM snapshots
+            ORDER BY timestamp DESC
+        `;
         const result = await pool.query(query);
 
         // stop process if table is empty
@@ -63,10 +67,9 @@ const listSnapshots = async () => {
             return;
         }
 
-        // stdout
-        console.log('SNAPSHOT  |  TIMESTAMP');
+        console.log('SNAPSHOT | TIMESTAMP');
         for (const snapshot of result.rows) {
-            console.log(`${snapshot.id}  |  ${snapshot.timestamp}`);
+            console.log(`${snapshot.id} | ${snapshot.formatted_timestamp}`);
         }
 
     } catch (error) {

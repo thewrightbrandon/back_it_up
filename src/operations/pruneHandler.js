@@ -29,6 +29,7 @@ const pruneSnapshot = async (snapshotId) => {
 
 // prune snapshots older than provided timestamp
 const pruneSnapshotByTimestamp = async (timestamp) => {
+    // console.log("Timestamp being passed:", timestamp);
 
     try {
         // delete  snapshots older than the provided timestamp
