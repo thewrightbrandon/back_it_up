@@ -1,0 +1,1 @@
+Default directory for restoring snapshots if one is not defined.
