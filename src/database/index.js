@@ -25,7 +25,4 @@ const closeDatabaseConnection = async () => {
     }
 };
 
-const startDatabaseConnection = connectToDatabase();
-const endDatabaseConnection = closeDatabaseConnection();
-
-module.exports = { startDatabaseConnection, endDatabaseConnection };
+module.exports = { connectToDatabase, closeDatabaseConnection };
