@@ -31,7 +31,6 @@ const pruneSnapshot = async (snapshotId) => {
 const pruneSnapshotByTimestamp = async (timestamp) => {
 
     try {
-
         // delete  snapshots older than the provided timestamp
         const deleteSnapshotsQuery = `
             DELETE FROM snapshots WHERE timestamp < $1
@@ -45,6 +44,5 @@ const pruneSnapshotByTimestamp = async (timestamp) => {
         throw error;
     }
 };
-
 
 module.exports = { pruneSnapshot, pruneSnapshotByTimestamp };

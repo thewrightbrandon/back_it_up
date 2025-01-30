@@ -34,7 +34,7 @@ const takeSnapshot = async (directoryPath) => {
                 }
 
             } catch (error) {
-                console.error(`Error processing file: ${fullPath}`, error);
+                console.error(`Error processing file: ${file}`, error);
             }
         }
 

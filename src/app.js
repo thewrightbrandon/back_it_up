@@ -1,5 +1,5 @@
 // main entry point for the CLI backup tool
-const { connectToDatabase } = require('./database/index');  // DB Connection logic
+const { connectToDatabase } = require('config/databaseConfig');
 const { promptUser } = require('./operations/promptHandler');
 
 const start = async () => {
@@ -16,6 +16,5 @@ const start = async () => {
         throw error;
     }
 };
-
 // initialize the command line backup tool
 start();

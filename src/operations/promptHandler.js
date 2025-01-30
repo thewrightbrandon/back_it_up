@@ -1,9 +1,9 @@
 const path = require('path');
 const readline = require('readline');
-const { takeSnapshot, listSnapshots } = require('./snapshotHandler');  // Snapshot logic
-const { restoreSnapshot } = require('./restoreHandler');  // Restore logic
-const { pruneSnapshot, pruneSnapshotByTimestamp } = require('./pruneHandler');  // Prune logic
-const { closeDatabaseConnection } = require('../database/index');  // Database closing logic
+const { takeSnapshot, listSnapshots } = require('./snapshotHandler');
+const { restoreSnapshot } = require('./restoreHandler');
+const { pruneSnapshot, pruneSnapshotByTimestamp } = require('./pruneHandler');
+const { closeDatabaseConnection } = require('../../config/databaseConfig');
 
 // provides a CLI interface, used to get user input
 const readLine = readline.createInterface({
@@ -67,6 +67,7 @@ const promptUser = () => {
                         // if user input does not contain path, use default
                         outputDirectory = RESTORE_DIRECTORY;
                     }
+
                     // check to make sure snapshotId was included in user input command
                     if (snapshotId) {
                         await restoreSnapshot(snapshotId, outputDirectory);
@@ -77,6 +78,7 @@ const promptUser = () => {
 
                 case 'prune':
                     const snapshotToPruneId = commandArguments[1];
+
                     // check to make sure snapshotId was included in user input command
                     if (snapshotToPruneId) {
                         await pruneSnapshot(snapshotToPruneId);
@@ -90,11 +92,13 @@ const promptUser = () => {
                     const dateRegex = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/;
                     // will create a Date object if timestamp format is correct
                     const dateObject = new Date(timestamp);
+
                     // checks to make sure timestamp is there and in correct format, test() method provided by regex
                     if (!timestamp || !dateRegex.test(timestamp)) {
                         console.log('Invalid timestamp format, please use: YYYY-MM-DD HH:MM:SS');
                         break;
                     }
+
                     // checks to make sure timestamp corresponds to a valid date-time
                     // if timestamp was incorrectly formatted getTime() will return NaN
                     if (isNaN(dateObject.getTime())) {
@@ -125,7 +129,6 @@ const promptUser = () => {
             console.error(`Error executing command: ${error.message}`);
             throw error;
         }
-
         // continue to prompt user after handling command, exit command will shut down prompt
         promptUser();
     });

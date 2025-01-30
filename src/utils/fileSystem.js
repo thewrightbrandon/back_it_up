@@ -57,9 +57,11 @@ const getFileStats = (filePath) => {
 
 // read a file's content and return the file content as a Buffer (raw binary)
 const readFileContent = (filePath) => {
+
     try {
         // reads the file at the provided filePath and returns the contents of the file
         return fs.readFileSync(filePath);
+
     } catch (error) {
         console.error(`Error reading file content: ${filePath}`, error.message);
         throw error;
