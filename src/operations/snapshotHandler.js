@@ -5,7 +5,7 @@ const { hashFile, getFilesInDirectory, getFileStats, readFileContent } = require
 const takeSnapshot = async (directoryPath) => {
 
     try {
-        const snapshotQuery = `INSERT INTO snapshots (timestamp) VALUES (CURRENT_TIMESTAMP) RETURNING id`;
+        const snapshotQuery = `INSERT INTO snapshots (timestamp) VALUES (CURRENT_TIMESTAMP::timestamp(0)) RETURNING id`;
         // executes single sql query, uses a connection from the pool and returns results
         const snapshotResult = await pool.query(snapshotQuery);
         // assign snapshotId variable to insert into files table to associate snapshots with files
