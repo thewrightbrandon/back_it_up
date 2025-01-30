@@ -70,7 +70,6 @@ const promptUser = () => {
                         // if user input does not contain path, use default
                         outputDirectory = RESTORE_DIRECTORY;
                     }
-
                     // check to make sure snapshotId was included in user input command
                     if (snapshotId) {
                         await restoreSnapshot(snapshotId, outputDirectory);

@@ -45,7 +45,6 @@ const hashFile = (filePath) => {
 // fetching all files from specified directory & subdirectories
 const getFilesInDirectory = async (directoryPath) => {
     let filingCabinet = [];
-
     try {
         // read contents of specified directory
         const files = fs.readdirSync(directoryPath);
@@ -92,7 +91,6 @@ const getFileStats = (filePath) => {
 
 // read a file's content and return the file content as a Buffer (raw binary)
 const readFileContent = (filePath) => {
-
     try {
         // reads the file at the provided filePath and returns the contents of the file
         return fs.readFileSync(filePath);

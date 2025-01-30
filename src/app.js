@@ -11,7 +11,6 @@ const start = async () => {
     try {
         // entry point into the database, make sure there is a connection before continuing
         await connectToDatabase();
-        console.log('Successfully connected to database.');
         // start the command line interface and take user input
         promptUser();
     } catch (error) {

@@ -47,7 +47,6 @@ const takeIncrementalSnapshot = async (directoryPath) => {
         const snapshotResult = await pool.query(snapshotQuery);
         // assign snapshotId variable to insert into files table to associate snapshots with files
         const snapshotId = snapshotResult.rows[0].id;
-        console.log(`Snapshot created with an ID of: ${snapshotId}`);
 
         // insert new and modified files into the database and remove the files that are considered to be deleted
         const filePromises = [];
