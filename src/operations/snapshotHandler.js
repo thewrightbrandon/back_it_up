@@ -77,11 +77,14 @@ const takeIncrementalSnapshot = async (directoryPath) => {
                 const modifiedFileContent = await readFileContent(modifiedFile.filePath);
                 // ON CONFLICT if there is a file with the same filename + snapshot_id that already exists, the file is not inserted into the database but updated instead
                 // DO UPDATE SET tells the database to update the existing row's content_hash + content columns
+                // only update the file if the content hashes are different
                 const fileQuery = `
                     INSERT INTO files (filename, content_hash, snapshot_id, content)
                     VALUES ($1, $2, $3, $4)
                     ON CONFLICT (filename, snapshot_id) 
-                    DO UPDATE SET content_hash = EXCLUDED.content_hash, content = EXCLUDED.content
+                    DO UPDATE SET 
+                      content_hash = EXCLUDED.content_hash, 
+                      content = EXCLUDED.content
                 `;
                 filePromises.push(pool.query(fileQuery, [path.basename(modifiedFile.filePath), modifiedFile.fileHash, snapshotId, modifiedFileContent]));
                 // Log when a file is updated

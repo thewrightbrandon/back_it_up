@@ -3,6 +3,7 @@ const readline = require('readline');
 const { takeIncrementalSnapshot, listSnapshots } = require('./snapshotHandler');
 const { restoreSnapshot } = require('./restoreHandler');
 const { pruneSnapshot, pruneSnapshotByTimestamp } = require('./pruneHandler');
+const { countFilesInDatabase } = require("../database/databaseQuery");
 
 // provides a CLI interface, used to get user input
 const readLine = readline.createInterface({
@@ -25,7 +26,8 @@ const promptUser = () => {
     ★ List Snapshots     → "list"
     ★ Restore Snapshot   → "restore <snapshotId> <outputDirectory>"
     ★ Prune Snapshot     → "prune <snapshotId>"
-    ★ Prune by Timestamp → "prune_by_timestamp <YYYY-MM-DD HH:MM:SS>"
+    ★ Prune by Timestamp → "prune-by-timestamp <YYYY-MM-DD HH:MM:SS>"
+    ★ Files in Database  → "count"
     ★ Exit               → "exit"
     `);
 
@@ -88,7 +90,7 @@ const promptUser = () => {
                     }
                     break;
 
-                case 'prune_by_timestamp':
+                case 'prune-by-timestamp':
                     // rejoin timestamp format to follow YYYY-MM-DD HH:MM:SS
                     const timestamp = [commandArguments[1], commandArguments[2]].join(' ');
                     // regex to ensure timestamp format follows YYYY-MM-DD HH:MM:SS
@@ -119,6 +121,11 @@ const promptUser = () => {
 
                     // formattedTimestamp now matches the timestamp format in postgres db
                     await pruneSnapshotByTimestamp(formattedTimestamp);
+                    break;
+
+                case "count":
+                    const fileCount = await countFilesInDatabase();
+                    console.log(`Total files in database: ${fileCount}`);
                     break;
 
                 case 'exit':
