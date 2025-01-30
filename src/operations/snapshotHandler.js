@@ -13,7 +13,7 @@ const takeSnapshot = async (directoryPath) => {
         let snapshotId = snapshotResult.rows[0].id;
 
         // gets file from specified directory
-        const files = getFilesInDirectory(directoryPath);
+        const files = await getFilesInDirectory(directoryPath);
         const filePromises = [];
 
         for (const file of files) {

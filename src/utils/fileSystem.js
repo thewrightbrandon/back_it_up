@@ -42,17 +42,39 @@ const hashFile = (filePath) => {
 
 };
 
-// fetching all files from specified directory
-const getFilesInDirectory = (directoryPath) => {
+// fetching all files from specified directory & subdirectories
+const getFilesInDirectory = async (directoryPath) => {
+    let filingCabinet = [];
 
     try {
-        // returns array of file names, then iterates over and transforms array into array of full file paths
-        return fs.readdirSync(directoryPath).map(file => path.join(directoryPath, file));
+        // read contents of specified directory
+        const files = fs.readdirSync(directoryPath);
+
+        for (const file of files) {
+            // combine directoryPath and filename to form the full file path
+            const filePath = path.join(directoryPath, file);
+            // check if we are reading a file, directory, or something else
+            const stat = fs.statSync(filePath);
+
+            // if what is read is a nested directory we will recursively get those files as well
+            if (stat.isDirectory()) {
+                // recursive call on nested directory
+                const nestedFiles = await getFilesInDirectory(filePath);
+                console.log("Nested files array: ", nestedFiles);
+                // add files from nested directory to the existing array of files
+                filingCabinet = [...filingCabinet, ...nestedFiles];
+            } else if (stat.isFile()) {
+                // if what is read is a file then add it to the list
+                filingCabinet.push(filePath);
+            }
+        }
 
     } catch (error) {
         console.error(`Error reading directory: ${directoryPath}`, error.message);
         throw error;
     }
+
+    return filingCabinet;
 };
 
 // method checks to be sure we are dealing with a file and nothing else
