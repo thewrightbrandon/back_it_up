@@ -1,6 +1,6 @@
 const path = require('path');
 const readline = require('readline');
-const { takeSnapshot, listSnapshots } = require('./snapshotHandler');
+const { takeIncrementalSnapshot, listSnapshots } = require('./snapshotHandler');
 const { restoreSnapshot } = require('./restoreHandler');
 const { pruneSnapshot, pruneSnapshotByTimestamp } = require('./pruneHandler');
 
@@ -20,7 +20,7 @@ const RESTORE_DIRECTORY = path.resolve(__dirname, '../../restored_files');
 const promptUser = () => {
     console.log(`
     |||| COMMAND LINE BACKUP TOOL ||||
-    Available commands after arrow in quotes:
+    Available commands inside quotes ("command <argument>"):
     ★ Generate Snapshot  → "snapshot <directoryPath>"
     ★ List Snapshots     → "list"
     ★ Restore Snapshot   → "restore <snapshotId> <outputDirectory>"
@@ -50,7 +50,7 @@ const promptUser = () => {
                         directoryPath = SNAPSHOT_DIRECTORY;
                     }
 
-                    await takeSnapshot(directoryPath);
+                    await takeIncrementalSnapshot(directoryPath);
                     break;
 
                 case 'list':

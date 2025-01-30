@@ -9,9 +9,7 @@ const pool = new Pool({
     database: process.env.DATABASE_NAME,
     waitForConnections: true,
     connectionLimit: 10,
-    queueLimit: 0,
-    idleTimeoutMillis: 60000,
-    connectionTimeoutMillis: 5000,
+    queueLimit: 0
 });
 
 // console.log('Database config ', pool);
