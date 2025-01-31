@@ -1,10 +1,9 @@
 const { pool } = require('../../config/databaseConfig');
 
-// OPERATION: PRUNE
 const pruneSnapshot = async (snapshotId) => {
 
     try {
-        // check if snapshot exists in the snapshots database
+        // check if snapshot exists in the snapshots table
         const snapshotQuery = `
             SELECT * FROM snapshots WHERE id = $1
         `;
@@ -15,7 +14,6 @@ const pruneSnapshot = async (snapshotId) => {
             return;
         }
 
-        // delete the snapshot record
         const snapshotDeleteQuery = `DELETE FROM snapshots WHERE id = $1`;
         await pool.query(snapshotDeleteQuery, [snapshotId]);
 
@@ -27,12 +25,10 @@ const pruneSnapshot = async (snapshotId) => {
     }
 };
 
-// prune snapshots older than provided timestamp
 const pruneSnapshotByTimestamp = async (timestamp) => {
-    // console.log("Timestamp being passed:", timestamp);
 
     try {
-        // delete  snapshots older than the provided timestamp
+
         const deleteSnapshotsQuery = `
             DELETE FROM snapshots WHERE timestamp < $1
         `;

@@ -1,6 +1,5 @@
 const { Pool } = require('pg');
 
-// create connection pool to allow reuse of database connection
 const pool = new Pool({
     host: process.env.DATABASE_HOST,
     port: process.env.DATABASE_PORT,
@@ -12,5 +11,4 @@ const pool = new Pool({
     queueLimit: 0
 });
 
-// console.log('Database config ', pool);
 module.exports =  { pool };

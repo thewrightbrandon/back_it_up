@@ -1,6 +1,5 @@
 const { pool } = require('../../config/databaseConfig');
 
-// method to count files in the database
 const countFilesInDatabase = async () => {
     try {
         const countQuery = "SELECT COUNT(*) FROM files;";

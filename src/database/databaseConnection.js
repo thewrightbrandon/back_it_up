@@ -1,6 +1,5 @@
 const { pool } = require('../../config/databaseConfig');
 
-// method to establish postgres database connection
 const connectToDatabase = async () => {
     try {
         console.log("Attempting to connect to the database...");
