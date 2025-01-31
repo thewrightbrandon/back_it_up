@@ -50,13 +50,9 @@ const getFilesInDirectory = async (directoryPath) => {
 
             // recursively fetch files from subdirectories
             if (stat.isDirectory()) {
-                // recursive call on nested directory
                 const nestedFiles = await getFilesInDirectory(filePath);
-                // console.log("Nested files array: ", nestedFiles);
-                // add files from nested directory to the existing array of files
                 filingCabinet = [...filingCabinet, ...nestedFiles];
             } else if (stat.isFile()) {
-                // if what is read is a file then add it to the list
                 filingCabinet.push(filePath);
             }
         }

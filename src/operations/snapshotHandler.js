@@ -19,9 +19,11 @@ const takeIncrementalSnapshot = async (directoryPath) => {
 
         const snapshotId = await createSnapshot();
 
+        const validFiles = [];
         for (const file of newOrModifiedFiles) {
             try {
                 file.content = await readFileContent(file.filePath);
+                validFiles.push(file);
             } catch (error) {
                 // isolate bad file, continue looping through rest of files
                 console.error(`Error reading file content: ${file.filePath}`, error.message);
@@ -29,9 +31,13 @@ const takeIncrementalSnapshot = async (directoryPath) => {
             }
         }
 
-        await insertOrUpdateFiles(newOrModifiedFiles, snapshotId);
-        console.log(`New records added to the database: ${newOrModifiedFiles.length}`)
-        console.log(`Snapshot successfully created with ID: ${snapshotId}`);
+        if (validFiles.length) {
+            await insertOrUpdateFiles(validFiles, snapshotId);
+            console.log(`New records added to the database: ${validFiles.length}`);
+            console.log(`Snapshot successfully created with ID: ${snapshotId}`);
+        } else {
+            console.log("No valid files to add to the database.");
+        }
 
     } catch (error) {
         console.error('Error creating incremental snapshot:', error.message);
