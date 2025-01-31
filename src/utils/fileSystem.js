@@ -2,6 +2,14 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 
+const directoryExists = (directoryPath) => {
+    try {
+        return fs.lstatSync(directoryPath).isDirectory();
+    } catch (error) {
+        return false;
+    }
+};
+
 const createRestoreDirectoryIfNoneExist = (directoryPath) => {
     if (!fs.existsSync(directoryPath)) {
         fs.mkdirSync(directoryPath, { recursive: true })
@@ -96,5 +104,6 @@ module.exports = {
     hashFile,
     getFilesInDirectory,
     getFileStats,
-    readFileContent
+    readFileContent,
+    directoryExists
 };

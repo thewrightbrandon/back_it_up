@@ -1,4 +1,4 @@
-const { readFileContent } = require('../utils/fileSystem')
+const { readFileContent, directoryExists } = require('../utils/fileSystem')
 const { compareFiles } = require('../utils/fileComparison');
 const { getRecordedFiles, createSnapshot, insertOrUpdateFiles, listSnapshots } = require('../database/snapshotQueries');
 
@@ -7,6 +7,11 @@ const takeIncrementalSnapshot = async (directoryPath) => {
     try {
 
         console.log("Preparing file snapshot...");
+
+        if (!(directoryExists(directoryPath))) {
+            console.error(`Error: Directory not found - ${directoryPath}`);
+            return;
+        }
 
         const recordedFiles = await getRecordedFiles();
         const { newFiles, modifiedFiles } = await compareFiles(directoryPath, recordedFiles);

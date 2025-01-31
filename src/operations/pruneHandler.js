@@ -4,6 +4,12 @@ const pruneSnapshot = async (snapshotId) => {
 
     try {
 
+        const numericSnapshotId = parseInt(snapshotId, 10);
+        if (isNaN(numericSnapshotId)) {
+            console.error(`Invalid snapshot ID - "${snapshotId}." Use command 'list' to view valid numeric IDs.`);
+            return;
+        }
+
         const snapshotQuery = `
             SELECT * FROM snapshots WHERE id = $1
         `.trim();
