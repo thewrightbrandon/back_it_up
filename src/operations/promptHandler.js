@@ -18,15 +18,15 @@ const RESTORE_DIRECTORY = path.resolve(__dirname, '../../restored_files');
 const promptUser = () => {
 
     console.log(`
-    |||| COMMAND LINE BACKUP TOOL ||||
-    Available commands (command <argument>):
-    ★ Generate Snapshot  → snapshot <directoryPath>
-    ★ List Snapshots     → list
-    ★ Restore Snapshot   → restore <snapshotId> <outputDirectory>
-    ★ Prune Snapshot     → prune <snapshotId>
-    ★ Prune Before Date  → prune-by-timestamp <YYYY-MM-DD HH:MM:SS>
-    ★ Files in Database  → count
-    ★ Exit               → exit
+        |||| COMMAND LINE BACKUP TOOL ||||
+        Available commands (command <argument>):
+        ★ Generate Snapshot  → snapshot <directoryPath>
+        ★ List Snapshots     → list
+        ★ Restore Snapshot   → restore <snapshotId> <outputDirectory>
+        ★ Prune Snapshot     → prune <snapshotId>
+        ★ Prune Before Date  → prune-by-timestamp <YYYY-MM-DD HH:MM:SS>
+        ★ Files in Database  → count
+        ★ Exit               → exit
     `);
 
     readLine.question('Enter an available command: ', async (command) => {
