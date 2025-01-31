@@ -1,9 +1,9 @@
 const path = require('path');
 const readline = require('readline');
-const { takeIncrementalSnapshot, listSnapshots } = require('./snapshotHandler');
+const { takeIncrementalSnapshot, displaySnapshots } = require('./snapshotHandler');
 const { restoreSnapshot } = require('./restoreHandler');
 const { pruneSnapshot, pruneSnapshotByTimestamp } = require('./pruneHandler');
-const { countFilesInDatabase } = require("../database/databaseQuery");
+const { countFilesInDatabase } = require("../database/databaseQueries");
 
 // provides a CLI interface, used to get user input
 const readLine = readline.createInterface({
@@ -50,7 +50,7 @@ const promptUser = () => {
                     break;
 
                 case 'list':
-                    await listSnapshots();
+                    await displaySnapshots();
                     break;
 
                 case 'restore':

@@ -8,7 +8,7 @@ const restoreSnapshot = async (snapshotId, outputDirectory) => {
     try {
 
         const fileQuery = `
-            SELECT filename, content FROM files WHERE snapshot_id = $1
+            SELECT filename, relative_path, content FROM files WHERE snapshot_id = $1
         `;
         const result = await pool.query(fileQuery, [snapshotId]);
 
@@ -20,8 +20,14 @@ const restoreSnapshot = async (snapshotId, outputDirectory) => {
         createRestoreDirectoryIfNoneExist(outputDirectory);
 
         for (const file of result.rows) {
-            const filePath = path.join(outputDirectory, file.filename);
-            fs.writeFileSync(filePath, file.content);
+            const fileOutputPath = path.join(outputDirectory, file.relative_path, file.filename);
+            const parentDirectory = path.dirname(fileOutputPath);
+
+            if (!fs.existsSync(parentDirectory)) {
+                fs.mkdirSync(parentDirectory, { recursive: true });
+            }
+
+            fs.writeFileSync(fileOutputPath, file.content);
         }
 
         console.log(`Snapshot ${snapshotId} restored to ${outputDirectory}`);
