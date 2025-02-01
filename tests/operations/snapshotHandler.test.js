@@ -1,5 +1,5 @@
 const { takeIncrementalSnapshot, displaySnapshots } = require('../../src/operations/snapshotHandler');
-const { readFileContent } = require('../../src/utils/fileSystem');
+const { readFileContent, directoryExists } = require('../../src/utils/fileSystem');
 const { compareFiles } = require('../../src/utils/fileComparison');
 const { getRecordedFiles, createSnapshot, insertOrUpdateFiles, listSnapshots } = require('../../src/database/snapshotQueries');
 
@@ -20,6 +20,7 @@ describe('takeIncrementalSnapshot', () => {
         const mockModifiedFiles = [{ filePath: '/mock/directory/file1.txt', content: 'updated content' }];
         const mockSnapshotId = 1;
 
+        directoryExists.mockReturnValue(true);
         getRecordedFiles.mockResolvedValue(mockRecordedFiles);
         compareFiles.mockResolvedValue({ newFiles: mockNewFiles, modifiedFiles: mockModifiedFiles });
         createSnapshot.mockResolvedValue(mockSnapshotId);
@@ -31,6 +32,7 @@ describe('takeIncrementalSnapshot', () => {
 
         await takeIncrementalSnapshot(mockDirectoryPath);
 
+        expect(directoryExists).toHaveBeenCalledWith(mockDirectoryPath);
         expect(getRecordedFiles).toHaveBeenCalled();
         expect(compareFiles).toHaveBeenCalledWith(mockDirectoryPath, mockRecordedFiles);
         expect(createSnapshot).toHaveBeenCalled();
