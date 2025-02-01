@@ -8,12 +8,15 @@ const restoreSnapshot = async (snapshotId, outputDirectory) => {
     try {
 
         const fileQuery = `
-            SELECT filename, relative_path, content FROM files WHERE snapshot_id = $1
+            SELECT f.filename, f.relative_path, fc.content
+            FROM files f
+                     JOIN file_contents fc ON f.content_id = fc.id
+                        WHERE f.snapshot_id = $1
         `;
         const result = await pool.query(fileQuery, [snapshotId]);
 
         if (!result.rows.length) {
-            console.log(`No snapshot found with ID: ${snapshotId}`);
+            console.log(`No files found got snapshot ID: ${snapshotId}`);
             return;
         }
 
