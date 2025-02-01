@@ -40,6 +40,12 @@ The Backup Tool CLI is a command-line application for managing incremental file 
    npm run migrate  # Apply database migrations
    ```
 
+### Environment Configuration
+Copy the example `.env` file and update it with your database credentials:
+```sh
+cp .env.example .env
+```
+
 ## Usage
 ```sh
 npm start
