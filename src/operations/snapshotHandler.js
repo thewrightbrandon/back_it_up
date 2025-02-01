@@ -1,72 +1,69 @@
-const pool = require('../../config/databaseConfig');
-const { hashFile, getFilesInDirectory, getFileStats, readFileContent } = require('../utils/fileSystem')
+const { readFileContent, directoryExists } = require('../utils/fileSystem')
+const { compareFiles } = require('../utils/fileComparison');
+const { getRecordedFiles, createSnapshot, insertOrUpdateFiles, listSnapshots } = require('../database/snapshotQueries');
 
-// OPERATION: SNAPSHOT
-const takeSnapshot = async (directoryPath) => {
+const takeIncrementalSnapshot = async (directoryPath) => {
 
     try {
-        const snapshotQuery = `INSERT INTO snapshots (timestamp) VALUES (CURRENT_TIMESTAMP) RETURNING id`;
-        // executes single sql query, uses a connection from the pool and returns results
-        const snapshotResult = await pool.query(snapshotQuery);
-        // assign snapshotId variable to insert into files table to associate snapshots with files
-        let snapshotId = snapshotResult.rows[0].id;
 
-        // gets file from specified directory
-        const files = getFilesInDirectory(directoryPath);
-        const filePromises = [];
+        console.log("Preparing file snapshot...");
 
-        for (const file of files) {
+        if (!(directoryExists(directoryPath))) {
+            console.error(`Error: Directory not found - ${directoryPath}`);
+            return;
+        }
 
+        const recordedFiles = await getRecordedFiles();
+        const { newFiles, modifiedFiles } = await compareFiles(directoryPath, recordedFiles);
+        const newOrModifiedFiles = [...newFiles, ...modifiedFiles]
+
+        if (!newOrModifiedFiles.length) {
+            console.log("Snapshot not recorded. No new or modified files detected in specified directory.");
+            return;
+        }
+
+        const snapshotId = await createSnapshot();
+
+        const validFiles = [];
+        for (const file of newOrModifiedFiles) {
             try {
-                // get file stats for each file and make sure we are dealing with just a file
-                const stat = getFileStats(file);
-                if (stat.isFile()) {
-                    // calculate file hash
-                    const fileHash = hashFile(file);
-                    // read file content as Buffer
-                    const fileContent = readFileContent(file);
-
-                    const fileQuery = `INSERT INTO files (filename, content_hash, snapshot_id, content)
-                                    VALUES ($1, $2, $3, $4)
-                    `;
-
-                    filePromises.push(pool.query(fileQuery, [file, fileHash, snapshotId, fileContent]));
-                }
-
+                file.content = await readFileContent(file.filePath);
+                validFiles.push(file);
             } catch (error) {
-                console.error(`Error processing file: ${fullPath}`, error);
+                // isolate bad file, continue looping through rest of files
+                console.error(`Error reading file content: ${file.filePath}`, error.message);
+                continue;
             }
         }
 
-        // wait for all file insertions
-        await Promise.all(filePromises);
-
-        console.log('Snapshot successfully created with ID:', snapshotId);
+        if (validFiles.length) {
+            await insertOrUpdateFiles(validFiles, snapshotId);
+            console.log(`New records added to the database: ${validFiles.length}`);
+            console.log(`Snapshot successfully created with ID: ${snapshotId}`);
+        } else {
+            console.log("No valid files to add to the database.");
+        }
 
     } catch (error) {
-        console.error('Error during snapshot creation:', error.message);
+        console.error('Error creating incremental snapshot:', error.message);
         throw error;
     }
 };
 
-// OPERATION: LIST
-const listSnapshots = async () => {
+const displaySnapshots = async () => {
 
     try {
-        // will list snapshots by most recent
-        const query = `SELECT id, timestamp FROM snapshots ORDER BY timestamp DESC`;
-        const result = await pool.query(query);
 
-        // stop process if table is empty
-        if (!result.rows.length) {
+        const snapshots = await listSnapshots();
+
+        if (!snapshots.length) {
             console.log('No snapshots found.');
             return;
         }
 
-        // stdout
-        console.log('SNAPSHOT  |  TIMESTAMP');
-        for (const snapshot of result.rows) {
-            console.log(`${snapshot.id}  |  ${snapshot.timestamp}`);
+        console.log('SNAPSHOT | TIMESTAMP');
+        for (const snapshot of snapshots) {
+            console.log(`${snapshot.id} | ${snapshot.formatted_timestamp}`);
         }
 
     } catch (error) {
@@ -75,4 +72,4 @@ const listSnapshots = async () => {
     }
 };
 
-module.exports = { takeSnapshot, listSnapshots };
+module.exports = { takeIncrementalSnapshot, displaySnapshots };

@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest",
+    "start": "node src/app.js",
+    "migrate": "npx node-pg-migrate up -f config/runMigration.js"
   },
   "private": true,
   "author": "",
@@ -13,8 +15,11 @@
     "crypto": "^1.0.1",
     "dotenv": "^16.4.7",
     "fs-extra": "^11.3.0",
-    "jest": "^29.7.0",
     "pg": "^8.13.1",
     "yargs": "^17.7.2"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "node-pg-migrate": "^7.9.0"
   }
 }
