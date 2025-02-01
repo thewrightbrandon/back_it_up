@@ -45,27 +45,13 @@ The Backup Tool CLI is a command-line application for managing incremental file 
 npm start
 ```
 
-## Running with Docker
-1. Build the Docker image:
-   ```sh
-   docker build -t back_it_up .
-   ```
-2. Run the container:
-   ```sh
-   docker run --env-file .env back_it_up snapshot /path/to/directory
-   ```
-3. To execute commands inside the container:
-   ```sh
-   docker run --rm back_it_up list
-   ```
-
 ## Testing
 To run tests using Jest:
 ```sh
 npm test
 ```
 
-## Future Improvements
+## Future Enhancements
 - **Enhanced Error Handling**: More robust error messages and structured logging.
 - **Detailed Logs & Reporting**: Enhance logging and include reporting features.
 - **Compression Support**: Store snapshots in compressed format to save space.
@@ -73,4 +59,6 @@ npm test
 - **S3/Cloud Storage Integration**: Store snapshots in cloud storage.
 - **Encryption Support**: Secure snapshots with encryption.
 
-
+## Improvements
+- Get further in Docker implementation
+- Add more unit tests & attempt integration tests 
