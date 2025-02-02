@@ -58,9 +58,9 @@ const insertOrUpdateFiles = async (files, snapshotId) => {
                 if (file.content) {
                     const insertContentQuery = `
                         INSERT INTO file_contents (content_hash, content)
-                        VALUES ($1, $2)
-                        ON CONFLICT (content_hash) DO NOTHING
-                        RETURNING id
+                            VALUES ($1, $2)
+                                ON CONFLICT (content_hash) DO NOTHING
+                                    RETURNING id
                     `;
                     const contentResult = await pool.query(insertContentQuery, [file.fileHash, file.content]);
 
@@ -76,9 +76,9 @@ const insertOrUpdateFiles = async (files, snapshotId) => {
 
             const fileQuery = `
                 INSERT INTO files (filename, content_id, snapshot_id, relative_path)
-                VALUES ($1, $2, $3, $4)
-                ON CONFLICT (filename, snapshot_id, relative_path)
-                    DO UPDATE SET content_id = EXCLUDED.content_id
+                    VALUES ($1, $2, $3, $4)
+                        ON CONFLICT (filename, snapshot_id, relative_path)
+                            DO UPDATE SET content_id = EXCLUDED.content_id
             `;
             filePromises.push(pool.query(fileQuery, [file.fileName, contentId, snapshotId, file.relativePath]));
         }
