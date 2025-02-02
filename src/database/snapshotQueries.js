@@ -41,40 +41,46 @@ const createSnapshot = async () => {
 };
 
 const insertOrUpdateFiles = async (files, snapshotId) => {
-
     try {
-
         const filePromises = [];
 
         for (const file of files) {
-            const insertContentQuery = `
-                INSERT INTO file_contents (content_hash, content)
-                    VALUES ($1, $2)
-                        ON CONFLICT (content_hash) DO NOTHING
-                            RETURNING id
-            `;
-            const contentResult = await pool.query(insertContentQuery, [file.fileHash, file.content]);
-
             let contentId;
-            if (contentResult.rows.length > 0) {
-                contentId = contentResult.rows[0].id;
-            } else {
-                const existingContentQuery = `
-                    SELECT id FROM file_contents WHERE content_hash = $1
-                `;
-                const existingContentResult = await pool.query(existingContentQuery, [file.fileHash]);
+
+            const existingContentQuery = `
+                SELECT id FROM file_contents WHERE content_hash = $1
+            `;
+            const existingContentResult = await pool.query(existingContentQuery, [file.fileHash]);
+
+            if (existingContentResult.rows.length > 0) {
                 contentId = existingContentResult.rows[0].id;
+            } else {
+                if (file.content) {
+                    const insertContentQuery = `
+                        INSERT INTO file_contents (content_hash, content)
+                        VALUES ($1, $2)
+                        ON CONFLICT (content_hash) DO NOTHING
+                        RETURNING id
+                    `;
+                    const contentResult = await pool.query(insertContentQuery, [file.fileHash, file.content]);
+
+                    if (contentResult.rows.length > 0) {
+                        contentId = contentResult.rows[0].id;
+                    } else {
+                        contentId = existingContentResult.rows[0].id;
+                    }
+                } else {
+                    contentId = existingContentResult.rows[0].id;
+                }
             }
 
             const fileQuery = `
                 INSERT INTO files (filename, content_id, snapshot_id, relative_path)
-                    VALUES ($1, $2, $3, $4)
-                        ON CONFLICT (filename, snapshot_id, relative_path) 
-                            DO UPDATE SET 
-                                content_id = EXCLUDED.content_id
+                VALUES ($1, $2, $3, $4)
+                ON CONFLICT (filename, snapshot_id, relative_path)
+                    DO UPDATE SET content_id = EXCLUDED.content_id
             `;
             filePromises.push(pool.query(fileQuery, [file.fileName, contentId, snapshotId, file.relativePath]));
-
         }
 
         await Promise.all(filePromises);

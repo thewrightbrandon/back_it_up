@@ -25,9 +25,18 @@ const pruneSnapshot = async (snapshotId) => {
         `.trim();
         await pool.query(snapshotDeleteQuery, [snapshotId]);
 
+        const pruneFilesQuery = `
+            DELETE FROM files WHERE snapshot_id = $1
+        `.trim();
+        await pool.query(pruneFilesQuery, [snapshotId]);
+
         const pruneFileContentsQuery = `
             DELETE FROM file_contents
-            WHERE id NOT IN (SELECT content_id FROM files)
+            WHERE id IN (
+                SELECT fc.id FROM file_contents fc
+                LEFT JOIN files f ON fc.id = f.content_id
+                WHERE f.content_id IS NULL
+            )
         `.trim();
         await pool.query(pruneFileContentsQuery);
 
@@ -47,9 +56,18 @@ const pruneSnapshotByTimestamp = async (timestamp) => {
         `.trim();
         await pool.query(deleteSnapshotsQuery, [timestamp]);
 
+        const pruneFilesQuery = `
+            DELETE FROM files WHERE snapshot_id NOT IN (SELECT id FROM snapshots)
+        `.trim();
+        await pool.query(pruneFilesQuery);
+
         const pruneFileContentsQuery = `
             DELETE FROM file_contents
-            WHERE id NOT IN (SELECT content_id FROM files)
+            WHERE id IN (
+                SELECT fc.id FROM file_contents fc
+                LEFT JOIN files f ON fc.id = f.content_id
+                WHERE f.content_id IS NULL
+            )
         `.trim();
         await pool.query(pruneFileContentsQuery);
 

@@ -105,7 +105,7 @@ const promptUser = () => {
 
                 case "count":
                     const fileCount = await countFilesInDatabase();
-                    console.log(`Total files in database: ${fileCount}`);
+                    console.log(`Total unique files in database: ${fileCount}`);
                     break;
 
                 case 'exit':
