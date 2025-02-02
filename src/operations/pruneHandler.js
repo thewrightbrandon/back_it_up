@@ -25,7 +25,22 @@ const pruneSnapshot = async (snapshotId) => {
         `.trim();
         await pool.query(snapshotDeleteQuery, [snapshotId]);
 
-        console.log(`Snapshot ${snapshotId} and its associated files have been pruned.`);
+        const pruneFilesQuery = `
+            DELETE FROM files WHERE snapshot_id = $1
+        `.trim();
+        await pool.query(pruneFilesQuery, [snapshotId]);
+
+        const pruneFileContentsQuery = `
+            DELETE FROM file_contents
+            WHERE id IN (
+                SELECT fc.id FROM file_contents fc
+                LEFT JOIN files f ON fc.id = f.content_id
+                WHERE f.content_id IS NULL
+            )
+        `.trim();
+        await pool.query(pruneFileContentsQuery);
+
+        console.log(`Snapshot ${snapshotId} has been pruned.`);
     } catch (error) {
         console.error('Error pruning snapshot:', error.message);
         throw error;
@@ -40,6 +55,21 @@ const pruneSnapshotByTimestamp = async (timestamp) => {
             DELETE FROM snapshots WHERE timestamp < $1
         `.trim();
         await pool.query(deleteSnapshotsQuery, [timestamp]);
+
+        const pruneFilesQuery = `
+            DELETE FROM files WHERE snapshot_id NOT IN (SELECT id FROM snapshots)
+        `.trim();
+        await pool.query(pruneFilesQuery);
+
+        const pruneFileContentsQuery = `
+            DELETE FROM file_contents
+            WHERE id IN (
+                SELECT fc.id FROM file_contents fc
+                LEFT JOIN files f ON fc.id = f.content_id
+                WHERE f.content_id IS NULL
+            )
+        `.trim();
+        await pool.query(pruneFileContentsQuery);
 
         console.log(`Snapshots older than ${timestamp} have been pruned.`);
     } catch (error) {

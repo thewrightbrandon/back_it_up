@@ -19,7 +19,7 @@ describe('compareFiles', () => {
 
         const result = await compareFiles(mockDirectory, recordedFiles);
 
-        expect(result).toEqual({ newFiles: [], modifiedFiles: [] });
+        expect(result).toEqual({ allFiles: [], newFiles: [], modifiedFiles: [] });
     });
 
     it('detects new files', async () => {
@@ -34,6 +34,9 @@ describe('compareFiles', () => {
         const result = await compareFiles(mockDirectory, recordedFiles);
 
         expect(result).toEqual({
+            allFiles: [
+                { filePath: '/mock/directory/newFile.txt', fileName: 'newFile.txt', fileHash: 'hash123', relativePath: '' },
+            ],
             newFiles: [
                 { filePath: '/mock/directory/newFile.txt', fileName: 'newFile.txt', fileHash: 'hash123', relativePath: '' },
             ],
@@ -55,6 +58,9 @@ describe('compareFiles', () => {
         const result = await compareFiles(mockDirectory, recordedFiles);
 
         expect(result).toEqual({
+            allFiles: [
+                { filePath: '/mock/directory/modifiedFile.txt', fileName: 'modifiedFile.txt', fileHash: 'newHash', relativePath: '' },
+            ],
             newFiles: [],
             modifiedFiles: [
                 { filePath: '/mock/directory/modifiedFile.txt', fileName: 'modifiedFile.txt', fileHash: 'newHash', relativePath: '' },

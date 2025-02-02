@@ -11,9 +11,10 @@ const compareFiles = async (directoryPath, recordedFiles) => {
         if (!currentFiles.length) {
             console.log("Snapshot not recorded. The specified directory is empty.");
             // method won't return undefined if specified directory is empty
-            return { newFiles: [], modifiedFiles: [] };
+            return { allFiles: [], newFiles: [], modifiedFiles: [] };
         }
 
+        const allFiles = [];
         const newFiles = [];
         const modifiedFiles = [];
 
@@ -22,18 +23,21 @@ const compareFiles = async (directoryPath, recordedFiles) => {
             const fileName = path.basename(filePath);
             const fileHash = await hashFile(filePath);
 
+            const file = { filePath, fileName, fileHash, relativePath };
+            allFiles.push(file);
+
             const fileKey = `${relativePath}/${fileName}`;
 
             if (!recordedFiles.has(fileKey)) {
-                newFiles.push({ filePath, fileName, fileHash, relativePath });
+                newFiles.push(file);
             } else if (recordedFiles.get(fileKey) !== fileHash) {
-                modifiedFiles.push({ filePath, fileName, fileHash, relativePath });
+                modifiedFiles.push(file);
             }
         }
 
         console.log(`New files found: ${newFiles.length}`)
         console.log(`Modified files found: ${modifiedFiles.length}`);
-        return { newFiles, modifiedFiles };
+        return { allFiles, newFiles, modifiedFiles };
     } catch (error) {
         console.error('Error comparing files:', error.message);
         throw error;

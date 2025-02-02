@@ -14,20 +14,24 @@ const takeIncrementalSnapshot = async (directoryPath) => {
         }
 
         const recordedFiles = await getRecordedFiles();
-        const { newFiles, modifiedFiles } = await compareFiles(directoryPath, recordedFiles);
-        const newOrModifiedFiles = [...newFiles, ...modifiedFiles]
+        const { allFiles, newFiles, modifiedFiles } = await compareFiles(directoryPath, recordedFiles);
 
-        if (!newOrModifiedFiles.length) {
-            console.log("Snapshot not recorded. No new or modified files detected in specified directory.");
+        if (!newFiles.length && !modifiedFiles.length) {
+            console.log("No new or modified files detected. Snapshot not created.");
             return;
         }
 
-        const snapshotId = await createSnapshot();
+        if (!allFiles.length) {
+            console.log("Snapshot not recorded. No files detected in the specified directory.");
+            return;
+        }
 
         const validFiles = [];
-        for (const file of newOrModifiedFiles) {
+        for (const file of allFiles) {
             try {
-                file.content = await readFileContent(file.filePath);
+                if (newFiles.includes(file) || modifiedFiles.includes(file)) {
+                    file.content = await readFileContent(file.filePath);
+                }
                 validFiles.push(file);
             } catch (error) {
                 // isolate bad file, continue looping through rest of files
@@ -37,8 +41,8 @@ const takeIncrementalSnapshot = async (directoryPath) => {
         }
 
         if (validFiles.length) {
+            const snapshotId = await createSnapshot();
             await insertOrUpdateFiles(validFiles, snapshotId);
-            console.log(`New records added to the database: ${validFiles.length}`);
             console.log(`Snapshot successfully created with ID: ${snapshotId}`);
         } else {
             console.log("No valid files to add to the database.");
