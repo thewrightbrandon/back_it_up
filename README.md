@@ -15,7 +15,6 @@ The Backup Tool CLI is a command-line application for managing incremental file 
 - **Error Handling**:Gracefully handles missing directories and invalid snapshot IDs.
 - **Automatic Directory Handling**: Ensures directories exist before performing operations.
 - **Database Integration**: Uses PostgreSQL to track file changes.
-- **Docker Support**: Easily run the tool in a containerized environment.
 
 ## Installation
 ### Prerequisites
@@ -67,4 +66,4 @@ npm test
 
 ## Improvements
 - Get further in Docker implementation
-- Add more unit tests & attempt integration tests 
+- Add more unit tests & attempt integration tests
